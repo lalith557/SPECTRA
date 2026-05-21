@@ -1,0 +1,85 @@
+project: SPECTRA
+experiment: spectra_full
+seed: 42
+
+data:
+  root: ./datasets
+  dataset: trans10k          # trans10k | gsd | clearpose
+  image_size: [448, 448]
+  num_workers: 4
+  pin_memory: true
+
+model:
+  backbone: dinov2_vits14    # dinov2_vitl14 | dinov2_vitb16 | dinov2_vits14
+  backbone_frozen: false
+  embed_dim: 384             # ViT-S/14 output dim
+  patch_size: 14
+  num_classes: 3             # background / things / stuff (Trans10K)
+
+flow:
+  model: raft_large          # raft_large | raft_small
+  iters: 20
+  temporal_stride: 1         # frames apart for flow computation
+
+ofcv:
+  hidden_dim: 256
+  n_heads: 8
+  dropout: 0.1
+  aux_var_weight: 0.1        # variance regularisation weight
+
+brf:
+  n_orientations: 8
+  n_scales: 3
+  peak_window: 15            # pixels — double-peak search window
+  sigma_factor: 2.0
+
+graph:
+  n_segments: 512            # SLIC superpixels
+  compactness: 10.0
+  gnn_layers: 4
+  gnn_hidden: 256
+  gnn_dropout: 0.1
+
+pretrain:
+  n_synthetic: 50000
+  n_min: 1.33                # water
+  n_max: 1.90                # crystal glass
+  temperature: 0.07
+  pretrain_epochs: 50
+  pretrain_lr: 3.0e-4
+  pretrain_batch: 256
+
+train:
+  epochs: 10
+  ablation_epochs: 30
+  batch_size: 4
+  lr: 1.0e-4
+  lr_backbone: 1.0e-5        # lower LR for backbone fine-tuning
+  weight_decay: 1.0e-4
+  warmup_epochs: 1
+  scheduler: cosine
+  label_fraction: 1.0        # semi-supervised: 0.1 | 0.25 | 0.5 | 1.0
+  patience: 10               # early stopping patience
+
+loss:
+  lambda_seg: 1.0
+  lambda_mat: 0.0
+  lambda_bnd: 0.5
+  lambda_consist: 0.1        # transparency consistency loss
+  lambda_refl: 0.1           # reflection suppression loss
+
+eval:
+  metrics: [iou, f_measure, mae, ber]
+  save_predictions: true
+  vis_freq: 1               # visualise every N epochs
+
+inference:
+  checkpoint: ./checkpoints/spectra_best.pth
+  device: cuda
+  half_precision: true       # FP16 for speed
+
+logging:
+  wandb_project: spectra-cvpr
+  wandb_entity: null         # set your wandb entity
+  log_freq: 50               # steps
+  save_dir: ./checkpoints

@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments — never commit
+venv/
+.venv/
+env/
+
+# Heavy data / outputs — keep out of git
+data/
+datasets/
+results/
+release/
+benchmarks/
+web/
+
+# Model checkpoints / weights — host on HuggingFace, S3, or Releases
+checkpoints/
+weights/
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+*.h5
+*.bin
+
+# Local logs / W&B
+wandb/
+runs/
+logs/
+*.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Env files
+.env
+.env.local
+
+# Large intermediate artefacts
+*.onnx
+*.engine
+*.tflite
