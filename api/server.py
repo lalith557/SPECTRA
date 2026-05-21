@@ -22,8 +22,10 @@ Run:
 import io
 import json
 import base64
+import os
 import time
 import sys
+import urllib.request
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import List, Optional, Dict, Any
@@ -59,14 +61,53 @@ IMAGENET_STD  = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 
 
 # ---------------------------------------------------------------------------
+# Weight download (Railway / any host without baked-in weights)
+# ---------------------------------------------------------------------------
+# Set SPECTRA_WEIGHTS_URL to a direct-download URL (e.g. a GitHub Release
+# asset URL ending in /releases/download/<tag>/spectra_best.pth) and the
+# server will fetch the checkpoint on first boot if it isn't already on disk.
+# Leave unset for local dev where the file already exists in weights/.
+
+WEIGHTS_URL = os.environ.get("SPECTRA_WEIGHTS_URL", "").strip()
+WEIGHTS_PATH = ROOT / "weights" / "spectra_best.pth"
+
+
+def ensure_weights() -> Optional[Path]:
+    """Download the checkpoint if missing and SPECTRA_WEIGHTS_URL is set."""
+    if WEIGHTS_PATH.exists():
+        return WEIGHTS_PATH
+    if not WEIGHTS_URL:
+        logger.warning(
+            "No checkpoint at %s and SPECTRA_WEIGHTS_URL is not set — "
+            "server will run with random weights.", WEIGHTS_PATH,
+        )
+        return None
+    WEIGHTS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    tmp = WEIGHTS_PATH.with_suffix(".pth.part")
+    logger.info("Downloading checkpoint from %s ...", WEIGHTS_URL)
+    try:
+        urllib.request.urlretrieve(WEIGHTS_URL, tmp)
+        tmp.replace(WEIGHTS_PATH)
+        logger.info("Checkpoint saved to %s (%.1f MB)",
+                    WEIGHTS_PATH, WEIGHTS_PATH.stat().st_size / 1e6)
+        return WEIGHTS_PATH
+    except Exception as e:
+        logger.error("Checkpoint download failed: %s", e)
+        if tmp.exists():
+            tmp.unlink(missing_ok=True)
+        return None
+
+
+# ---------------------------------------------------------------------------
 # Lifespan: load model on startup
 # ---------------------------------------------------------------------------
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    ckpt = ensure_weights()
     load_model(
         config_path=str(ROOT / "configs" / "config.yaml"),
-        checkpoint_path=str(ROOT / "weights" / "spectra_best.pth"),
+        checkpoint_path=str(ckpt) if ckpt else None,
     )
     yield
 
