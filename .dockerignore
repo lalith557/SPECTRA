@@ -1,0 +1,54 @@
+# Mirror .gitignore for the build context — keep the image lean.
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual envs
+venv/
+.venv/
+env/
+
+# Heavy data / outputs
+data/
+datasets/
+results/
+release/
+benchmarks/
+web/
+
+# Checkpoints / weights — downloaded at startup instead
+checkpoints/
+weights/
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+
+# Local logs
+wandb/
+runs/
+logs/
+*.log
+
+# Git / CI
+.git/
+.github/
+.gitignore
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Docs / paper artefacts (keep README, drop heavy figures)
+paper/figures/
+frontend\ images/
