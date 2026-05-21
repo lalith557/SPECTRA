@@ -11,7 +11,7 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
-# System deps for OpenCV / Pillow
+# System deps for OpenCV / Pillow + git for torch.hub (DINOv2)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 \
     libglib2.0-0 \
@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxext6 \
     libxrender1 \
     curl \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
 # Install CPU-only PyTorch first (keeps image small on Railway free tier)

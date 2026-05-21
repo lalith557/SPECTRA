@@ -22,8 +22,10 @@ from flow.raft_wrapper import RAFTWrapper, compute_warp_residual, compute_flow_c
 from modules.ofcv_detector import OFCVDetector
 from modules.brf import BoundaryResonanceField
 from modules.signal_fusion import FusionHead
-from graph.superpixel import SuperpixelGraphBuilder, unproject_to_pixels
-from graph.mbp_gnn import MBPGNN
+
+# Graph (MBP-GNN) imports are lazy because they pull in torch_geometric +
+# scikit-image, which are intentionally absent from the production
+# inference image. They are loaded only when use_gnn=True (training / full eval).
 
 
 class SPECTRA(nn.Module):
@@ -82,6 +84,9 @@ class SPECTRA(nn.Module):
 
         # ── C3: MBP-GNN (optional refinement) ────────────────────────────
         if use_gnn:
+            # Lazy import — only here do we need torch_geometric + skimage
+            from graph.superpixel import SuperpixelGraphBuilder
+            from graph.mbp_gnn import MBPGNN
             node_in_dim = 256 + 1 + 1 + 3 + 2   # proj_dino + ofcv + brf + rgb + xy
             self.graph_builder = SuperpixelGraphBuilder(
                 n_segments=cfg.graph.n_segments,
@@ -216,6 +221,7 @@ class SPECTRA(nn.Module):
         images, dino_feats, ofcv_maps, brf_maps, flow_cons_maps, H, W
     ) -> torch.Tensor:
         """Run MBP-GNN and return pixel-level seg probability (B, 1, H, W)."""
+        from graph.superpixel import unproject_to_pixels  # lazy
         B = images.shape[0]
         device = images.device
 
