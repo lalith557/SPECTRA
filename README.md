@@ -105,7 +105,111 @@ pip install torch-geometric -f https://data.pyg.org/whl/torch-2.1.0+cu118.html
 
 > **Note:** Pretrained weights (`spectra_best.pth`, ~320 MB) are not stored in this repo. Host them on HuggingFace, a GitHub Release, or Git LFS and update the path in `configs/config.yaml`.
 
-### Run the Demo
+---
+
+### Dataset — Trans10K (Download Required)
+
+The full Trans10K dataset (~10,000 images, ~2 GB) is **not included in this repository** due to GitHub's file-size limits. Download it manually from the original authors and place it under `spectra/data/Trans10K/`.
+
+**Official download sources** (all maintained by the original Trans10K authors, Xie *et al.* 2020):
+
+| Source | Link |
+|---|---|
+| Trans10K project page (primary) | <https://xieenze.github.io/projects/TransLAB/TransLAB.html> |
+| Official GitHub (download instructions) | <https://github.com/xieenze/Segment_Transparent_Objects> |
+| Google Drive mirror | <https://drive.google.com/drive/folders/10nFOG2NSStpO0BPnSAIqRryEqq--Mcga> |
+
+**Expected folder layout** after extraction:
+
+```
+spectra/
+└── data/
+    └── Trans10K/
+        ├── train/
+        │   ├── images/    (5,000 .jpg)
+        │   └── masks/     (5,000 .png)
+        ├── validation/
+        │   ├── images/    (1,000 .jpg)
+        │   └── masks/     (1,000 .png)
+        └── test/
+            ├── images/    (4,428 .jpg)
+            └── masks/     (4,428 .png)
+```
+
+Then verify the path in [`configs/config.yaml`](configs/config.yaml):
+
+```yaml
+data:
+  root: data/Trans10K
+  image_size: 448
+```
+
+> **Tip:** If you only want to run the demo / web app for inference, you do **not** need the dataset — only the pretrained checkpoint (`spectra_best.pth`).
+
+---
+
+## Running on Localhost — Two-Terminal Setup
+
+SPECTRA ships with a Next.js 15 frontend and a FastAPI backend. To run the full web app on your machine, open **two terminals** in the project root.
+
+### Terminal 1 — Backend (FastAPI, port 8080)
+
+```bash
+# Activate the Python virtual environment (skip if already active)
+# Windows:
+venv\Scripts\activate
+# macOS / Linux:
+source venv/bin/activate
+
+# Launch the FastAPI server with auto-reload
+uvicorn api.server:app --host 0.0.0.0 --port 8080 --reload
+```
+
+Backend will be live at **http://localhost:8080**.
+Quick health check (in any browser or a third terminal):
+
+```
+http://localhost:8080/health
+```
+
+You should see `{"status": "ok", "device": "cuda" | "cpu", ...}`.
+
+### Terminal 2 — Frontend (Next.js, port 3000)
+
+```bash
+cd web
+
+# One-time only: install Node dependencies (requires Node.js 18+)
+npm install
+
+# One-time only: create local env file so the frontend can find the backend
+cp .env.local.example .env.local        # macOS / Linux
+copy .env.local.example .env.local      # Windows
+# Leave NEXT_PUBLIC_API_URL empty — the Next.js rewrite already proxies /api/* → http://localhost:8080
+
+# Start the dev server
+npm run dev
+```
+
+Frontend will be live at **http://localhost:3000**.
+Open it in your browser — you should see the SPECTRA dashboard with six pages: Overview, Demo, Benchmarks, Interpretability, Failures, Research.
+
+### Verifying the End-to-End Pipeline
+
+1. Visit <http://localhost:3000/demo>.
+2. Drag and drop any glass-containing image (or pick a seed example).
+3. The frontend POSTs the image to `http://localhost:8080/predict_full`.
+4. Within ~1–2 s you should see the segmentation overlay plus the OFCV, BRF, flow-residual, entropy, and material-confidence heatmaps.
+
+If the heatmaps render but feel sluggish, the backend is running on CPU — install the CUDA build of PyTorch (`pip install torch --index-url https://download.pytorch.org/whl/cu118`) and restart Terminal 1.
+
+### Stopping the App
+
+Press `Ctrl + C` in **each** terminal. The backend and frontend run as independent processes.
+
+### Alternative — Gradio-Only Demo (No Next.js)
+
+If you only want a quick standalone demo without the full web stack:
 
 ```bash
 python demo/gradio_demo.py \
@@ -113,7 +217,7 @@ python demo/gradio_demo.py \
   --checkpoint weights/spectra_best.pth
 ```
 
-Open http://127.0.0.1:7860. The interface shows segmentation overlay, OFCV violation map, BRF boundary field, flow residual, uncertainty (entropy), and per-class material confidence.
+Open <http://127.0.0.1:7860>. The interface shows segmentation overlay, OFCV violation map, BRF boundary field, flow residual, uncertainty (entropy), and per-class material confidence.
 
 ### Evaluate a Checkpoint
 
