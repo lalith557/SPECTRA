@@ -311,7 +311,6 @@ This is a student project. If you find the code useful:
   author       = {Gona, Lalith},
   title        = {SPECTRA: Causal Physically-Guided Transparent-Object Segmentation},
   year         = {2026},
-  howpublished = {Final-project report, Lovely Professional University},
   url          = {https://github.com/lalith557/SPECTRA}
 }
 ```
@@ -320,6 +319,6 @@ This is a student project. If you find the code useful:
 
 <div align="center">
 
-**Built as a final-year project · Lovely Professional University · 2026**
+**As it's an open source you guys can contribute too.**
 
 </div>
