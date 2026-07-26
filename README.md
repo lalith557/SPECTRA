@@ -320,6 +320,6 @@ This is a student project. If you find the code useful:
 
 <div align="center">
 
-**Built as a final-year project · Lovely Professional University · 2026**
+**As it's an open source you guys can contribute too.**
 
 </div>
