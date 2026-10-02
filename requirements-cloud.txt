@@ -1,0 +1,40 @@
+# SPECTRA — CLOUD GPU TRAINING environment (pinned to the verified local working set)
+# Authoritative environment for reproducing P1/P1.5/P2/P3(/P4) on a cloud GPU.
+# (requirements.txt = inference/Railway; requirements-dev.txt = misc dev. This file = training.)
+#
+# PyTorch/torchvision are CUDA-12.8 builds; install them FROM the cu128 index FIRST:
+#   pip install --index-url https://download.pytorch.org/whl/cu128 torch==2.11.0 torchvision==0.26.0
+# then:  pip install -r requirements-cloud.txt
+#
+# Verified working set (RTX 4070 Laptop, CUDA 12.8, cuDNN 9.19, Python 3.13.12):
+# torch==2.11.0+cu128      torchvision==0.26.0+cu128     (install via cu128 index above)
+
+# --- core numerics / vision ---
+numpy==2.5.0
+opencv-python==4.13.0
+Pillow>=10.0.0
+scipy==1.18.0
+
+# --- model / transforms / backbones ---
+timm==0.9.7
+einops==0.8.2
+transformers==5.12.1          # DINOv2 is loaded via torch.hub, not HF, but kept for parity
+albumentations==2.0.8         # training augmentation pipeline (DualFrameTransform)
+
+# --- metrics / eval / plotting ---
+scikit-image==0.26.0          # import name: skimage (used by graph/superpixel when use_gnn=True)
+matplotlib==3.11.0
+
+# --- GNN (ONLY needed if use_gnn=True; headline/P1/P2/P3 use use_gnn=False) ---
+torch-geometric==2.8.0
+
+# --- config / logging / utils ---
+pyyaml==6.0.3
+tqdm>=4.66.0
+
+# NOTE: xFormers is intentionally NOT required. DINOv2 prints "xFormers not available"
+# warnings and runs correctly without it. Installing a mismatched xFormers can break torch.
+#
+# DINOv2 weights: fetched at runtime via torch.hub.load("facebookresearch/dinov2", ...)
+#   -> requires internet on first run (or a pre-warmed ~/.cache/torch/hub).
+# RAFT weights: torchvision Raft_Large_Weights.DEFAULT -> downloaded on first use (~20 MB).

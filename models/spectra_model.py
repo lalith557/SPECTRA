@@ -84,26 +84,39 @@ class SPECTRA(nn.Module):
 
         # ── C3: MBP-GNN (optional refinement) ────────────────────────────
         if use_gnn:
-            # Lazy import — only here do we need torch_geometric + skimage
-            from graph.superpixel import SuperpixelGraphBuilder
-            from graph.mbp_gnn import MBPGNN
-            node_in_dim = 256 + 1 + 1 + 3 + 2   # proj_dino + ofcv + brf + rgb + xy
-            self.graph_builder = SuperpixelGraphBuilder(
-                n_segments=cfg.graph.n_segments,
-                compactness=cfg.graph.compactness,
-                feat_proj_dim=256,
-                dino_dim=embed_dim,
-            )
-            self.gnn = MBPGNN(
-                node_in_dim=node_in_dim,
-                hidden_dim=cfg.graph.gnn_hidden,
-                n_layers=cfg.graph.gnn_layers,
-                num_classes=cfg.model.num_classes + 1,
-                dropout=cfg.graph.gnn_dropout,
-            )
+            # Lazy import — only here do we need torch_geometric + skimage.
+            # If either is missing, silently fall back to no-GNN so 30+ hours
+            # of training don't get wasted on an import error.
+            try:
+                from graph.superpixel import SuperpixelGraphBuilder
+                from graph.mbp_gnn import MBPGNN
+            except ImportError as e:
+                import warnings
+                warnings.warn(
+                    f"GNN refinement requested but its dependencies are "
+                    f"missing ({e}). Falling back to use_gnn=False. "
+                    f"To enable, run: pip install torch_geometric",
+                    RuntimeWarning,
+                )
+                self.use_gnn = False
+            else:
+                node_in_dim = 256 + 1 + 1 + 3 + 2   # proj_dino + ofcv + brf + rgb + xy
+                self.graph_builder = SuperpixelGraphBuilder(
+                    n_segments=cfg.graph.n_segments,
+                    compactness=cfg.graph.compactness,
+                    feat_proj_dim=256,
+                    dino_dim=embed_dim,
+                )
+                self.gnn = MBPGNN(
+                    node_in_dim=node_in_dim,
+                    hidden_dim=cfg.graph.gnn_hidden,
+                    n_layers=cfg.graph.gnn_layers,
+                    num_classes=cfg.model.num_classes + 1,
+                    dropout=cfg.graph.gnn_dropout,
+                )
 
-            # Learnable blend weight: fusion output vs GNN output
-            self.gnn_blend = nn.Parameter(torch.tensor(0.3))
+                # Learnable blend weight: fusion output vs GNN output
+                self.gnn_blend = nn.Parameter(torch.tensor(0.3))
 
     # ─────────────────────────────────────────────────────────────────────
 

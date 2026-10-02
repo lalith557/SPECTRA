@@ -144,11 +144,17 @@ class RAFTWrapper(nn.Module):
             param.requires_grad_(False)
 
     def _denorm(self, x: torch.Tensor) -> torch.Tensor:
-        """Convert ImageNet-normalised tensor back to [0, 255] for RAFT."""
+        """Convert ImageNet-normalised tensor to RAFT's expected [-1, 1] range.
+
+        torchvision RAFT's weights.transforms() normalises [0,1] with
+        mean=std=0.5 (i.e. 2x-1). The previous code produced [0,255], which is
+        out-of-distribution for RAFT and yields garbage flow until BatchNorm
+        running-stats slowly drift to that scale. This restores the correct range.
+        """
         mean = self.IMAGENET_MEAN.to(x.device)
         std  = self.IMAGENET_STD.to(x.device)
-        x    = x * std + mean                    # [0, 1]
-        return (x * 255.0).clamp(0, 255)         # [0, 255]
+        x    = x * std + mean                    # undo ImageNet norm -> [0, 1]
+        return (x * 2.0 - 1.0).clamp(-1.0, 1.0)  # -> [-1, 1]  (== weights.transforms())
 
     @torch.no_grad()
     def forward(
@@ -164,12 +170,12 @@ class RAFTWrapper(nn.Module):
             flow_fwd: (B, 2, H, W)  flow from t0 → t1
             flow_bwd: (B, 2, H, W)  flow from t1 → t0
         """
-        t0_255 = self._denorm(img_t0)
-        t1_255 = self._denorm(img_t1)
+        t0_in = self._denorm(img_t0)
+        t1_in = self._denorm(img_t1)
 
         # RAFT returns a list of flow estimates; take the finest
-        flow_fwd_list = self.raft(t0_255, t1_255, num_flow_updates=self.iters)
-        flow_bwd_list = self.raft(t1_255, t0_255, num_flow_updates=self.iters)
+        flow_fwd_list = self.raft(t0_in, t1_in, num_flow_updates=self.iters)
+        flow_bwd_list = self.raft(t1_in, t0_in, num_flow_updates=self.iters)
 
         flow_fwd = flow_fwd_list[-1]   # (B, 2, H, W)
         flow_bwd = flow_bwd_list[-1]   # (B, 2, H, W)

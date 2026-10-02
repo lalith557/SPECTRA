@@ -55,3 +55,14 @@ Thumbs.db
 *.onnx
 *.engine
 *.tflite
+
+# Editor/assistant local config — never commit
+.claude/
+.mcp.json
+
+# Research experiment outputs / datasets
+EXPERIMENTS/
+FIGURE/
+outputs/
+VSGD_dataset/
+clearpose_dataset/

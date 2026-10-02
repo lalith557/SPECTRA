@@ -79,7 +79,7 @@ inference:
   half_precision: true       # FP16 for speed
 
 logging:
-  wandb_project: spectra-cvpr
+  wandb_project: null        # disabled: avoids wandb.init() network hang on offline/blocked networks (set to a project name to re-enable)
   wandb_entity: null         # set your wandb entity
   log_freq: 50               # steps
   save_dir: ./checkpoints
