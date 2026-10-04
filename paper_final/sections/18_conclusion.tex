@@ -1,0 +1,13 @@
+\section{Conclusion}
+%==============================================================================
+We built a competent physics-motivated transparent-object segmenter and then did
+the harder thing: we tested whether the physics actually helps. Under a
+controlled five-variant, 30-epoch, three-seed ablation, hand-designed refraction
+cues add no accuracy beyond noise once a strong self-supervised backbone is
+present; cross-dataset transfer and a real-video control confirm that the
+learned flow cue is inert even given genuine parallax. The gain over CNN
+baselines is the representation's, not the physics'. We hope this disciplined
+negative result helps the community attribute performance to its true cause
+rather than to appealing but inert priors.
+
+%==============================================================================

@@ -1,0 +1,16 @@
+\section{Problem Definition}
+%==============================================================================
+Given an RGB frame $I_t\in\mathbb{R}^{3\times H\times W}$ (and, when available, a
+temporally adjacent frame $I_{t+1}$), the task is to predict a binary mask
+$M\in\{0,1\}^{H\times W}$ with $M_{ij}=1$ iff pixel $(i,j)$ belongs to a
+transparent object. We treat this as foreground/background segmentation and
+report pooled binary \iou, F-measure ($\beta^2=0.3$), Mean Absolute Error
+(MAE), and Balanced Error Rate (BER) at threshold $0.5$. The core scientific
+question is comparative: letting $f_\theta$ denote the model with physics
+modules and $f_{\theta\setminus\mathrm{phys}}$ the same model without them, is
+\begin{equation}
+\Delta = \mathbb{E}\!\left[\iou(f_\theta)\right]-\mathbb{E}\!\left[\iou(f_{\theta\setminus\mathrm{phys}})\right]
+\end{equation}
+positive beyond seed variance? We answer this directly in Sec.~\ref{sec:ablation}.
+
+%==============================================================================

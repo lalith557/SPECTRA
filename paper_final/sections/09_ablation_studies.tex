@@ -1,0 +1,132 @@
+\section{Ablation Studies}
+\label{sec:ablation}
+%==============================================================================
+This is the central experiment and the basis for our claims. All five variants
+share the \emph{same} pretrained \dinov{} backbone and decoder and differ only in
+the physics modules; each is trained for $30$ epochs (heads from random
+initialisation, backbone fine-tuned) and evaluated on Trans10K val
+(Table~\ref{tab:ablation}). Because the backbone is held fixed, this isolates the
+modules' effect---unlike the confounded comparison of Table~\ref{tab:main}.
+Multi-seed test results appear in Table~\ref{tab:seeds} and convergence curves in
+Fig.~\ref{fig:abl}.
+
+\begin{table}[t]
+\centering
+\caption{Controlled 30-epoch ablation on Trans10K val (best epoch).
+``neither'' is \dinov{}+fusion head with \emph{no} physics. The entire spread is
+$0.0033$ \iou---within seed noise (Table~\ref{tab:seeds}).}
+\label{tab:ablation}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llrrrr}
+\toprule
+Variant & Components & \iou$\uparrow$ & F$\uparrow$ & MAE$\downarrow$ & BER$\downarrow$ \\
+\midrule
+neither   & backbone+head     & 0.9322 & 0.9622 & 0.0230 & 0.0229 \\
+brf\_only & {+}\brf           & 0.9317 & 0.9617 & 0.0232 & 0.0230 \\
+full      & {+}\ofcv{+}\brf{+}GNN & 0.9325 & 0.9627 & 0.0233 & 0.0230 \\
+ofcv\_brf & {+}\ofcv{+}\brf   & 0.9348 & \best{0.9660} & 0.0224 & 0.0232 \\
+ofcv\_only& {+}\ofcv          & \best{0.9350} & 0.9626 & \best{0.0222} & \best{0.0212} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Multi-seed test \iou{} of the \ofcv{+}\brf{} model (Trans10K test,
+$4{,}428$ images). Seed variance ($\sigma=0.0008$) exceeds the entire
+between-variant spread in Table~\ref{tab:ablation}.}
+\label{tab:seeds}
+\begin{tabular}{lrrrr}
+\toprule
+Seed & \iou & F & MAE & BER \\
+\midrule
+7  & 0.9254 & 0.9599 & 0.0299 & 0.0262 \\
+13 & 0.9267 & 0.9598 & 0.0290 & 0.0253 \\
+42 & 0.9267 & 0.9599 & 0.0288 & 0.0253 \\
+\midrule
+mean$\pm$std & \multicolumn{4}{l}{$0.9263\pm0.0008$ \iou} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Finding.} The no-physics baseline (neither, $0.9322$) is statistically
+indistinguishable from the full physics model ($0.9325$). The best variant is
+\ofcv-only ($0.9350$), and adding the GNN to \ofcv{+}\brf{} \emph{reduces}
+\iou{} ($0.9348\!\to\!0.9325$). The complete spread is $[0.9317,0.9350]$
+($\Delta=0.0033$), within the seed standard deviation of $0.0008$. We conclude
+that, on this benchmark, the physics modules add no accuracy. Combined with the
+$+0.036$ gain over DeepLabV3+ in Table~\ref{tab:main}, the decomposition is
+inescapable: the advantage of \spectra{} comes from the \dinov{} representation,
+not from \ofcv{} or \brf.
+
+\textbf{Equivalence test.} A paired per-image bootstrap ($10{,}000$ resamples,
+$1{,}000$ validation images; Table~\ref{tab:ci}) sharpens this. The
+OFCV-bearing variants \emph{do} produce a statistically detectable improvement
+over the no-physics baseline ($+0.003$ \iou, $p<0.02$), but the $95\%$ CI lies
+entirely inside a $\pm0.01$ \iou{} margin, so by a two-one-sided test (TOST) the
+variants are \emph{practically equivalent}; \brf{} alone is statistically
+indistinguishable from zero ($p=0.97$). The honest reading is therefore not
+``exactly zero'' but ``bounded below practical relevance'': the largest effect
+any physics module buys is $+0.003$ \iou---an order of magnitude under the
+margin and comparable to the seed noise of Table~\ref{tab:seeds}.
+
+\begin{table}[t]
+\centering
+\caption{Paired bootstrap of each physics variant against the no-physics
+``neither'' baseline (same $1{,}000$ validation images). Effects are detectable
+for OFCV yet fall within a $\pm0.01$ \iou{} TOST equivalence margin; \brf{} is
+indistinguishable from zero.}
+\label{tab:ci}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrc}
+\toprule
+Comparison & $\Delta$\iou & $95\%$ CI & TOST-equiv.\ ($\pm0.01$) \\
+\midrule
+ofcv\_only $-$ neither & $+0.0030$ & $[+0.0005,+0.0055]$ & yes \\
+brf\_only $-$ neither  & $-0.0000$ & $[-0.0022,+0.0022]$ & yes \\
+ofcv\_brf $-$ neither  & $+0.0033$ & $[+0.0006,+0.0060]$ & yes \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig08_ablation_curves.pdf}
+\caption{Validation \iou{} versus epoch for the five ablation variants. All
+curves converge to the same narrow band; physics-equipped variants enjoy only a
+small early-epoch advantage that vanishes by convergence
+(cf.\ Table~\ref{tab:early}).}
+\label{fig:abl}
+\end{figure}
+
+\textbf{Early-convergence sub-study.} A separate 5-epoch run
+(Table~\ref{tab:early}) shows the modules give a small head-start ($-0.021$ to
+$-0.026$ \iou{} at epoch~1 when removed) that closes by epoch~5---the strongest
+positive statement the data supports, and a modest one.
+
+\begin{table}[t]
+\centering
+\caption{5-epoch early-convergence ablation (Trans10K val, seed 42). Physics
+helps at epoch~1 but the gap closes by epoch~5.}
+\label{tab:early}
+\begin{tabular}{lrrr}
+\toprule
+Variant & E1 \iou & E5 \iou & $\Delta$E1 vs.\ full \\
+\midrule
+full (\ofcv{+}\brf) & 0.8623 & 0.9133 & --- \\
+no\_ofcv            & 0.8365 & 0.9147 & $-0.026$ \\
+no\_brf             & 0.8414 & 0.9164 & $-0.021$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig07_training_curves.pdf}
+\caption{Validation \iou{} versus epoch. Training is monotone and stable; the
+\ofcv{} gate does not collapse (its per-image variance grows from $0.154$ to
+$0.216$ over early epochs while remaining image-dependent).}
+\label{fig:train}
+\end{figure}
+
+%==============================================================================

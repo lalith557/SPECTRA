@@ -1,0 +1,26 @@
+project: SPECTRA
+experiment: cross_dataset_eval
+seed: 42
+
+# Cross-dataset eval config — paths mirror the main config but with
+# per-dataset overrides if needed.
+
+data:
+  root: ./datasets
+  image_size: [448, 448]
+  num_workers: 2
+  pin_memory: true
+
+eval_targets:
+  # Reviewers expect: train on one, test on several.
+  # Each entry is dataset_name:split.
+  - trans10k:test       # in-domain control
+  - gsd:test            # zero-shot
+  - clearpose:all       # zero-shot, optional
+
+inference:
+  checkpoint: ./checkpoints/spectra_best.pth
+  batch_size: 4
+  half_precision: false      # fairer numbers without AMP at eval time
+
+output_dir: ./outputs/cross_dataset

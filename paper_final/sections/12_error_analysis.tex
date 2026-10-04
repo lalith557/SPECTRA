@@ -1,0 +1,35 @@
+\section{Error Analysis}
+\label{sec:error}
+%==============================================================================
+Across all $4{,}428$ test images the mean \iou{} is $0.9237$; the bottom-10\%
+bucket averages $0.2254$. An automated taxonomy of the $30$ lowest-scoring images
+attributes failures to: ``other'' (predominantly mirror-like specular surfaces
+and severe partial occlusion, $24$), motion-blur ($4$), and thin elements
+($2$) (Table~\ref{tab:fail}, Fig.~\ref{fig:fail}). The dominant ``other'' class
+is consistent with our analysis: these are cases where neither appearance nor a
+(degenerate) flow cue provides usable evidence.
+
+\begin{table}[t]
+\centering
+\caption{Failure taxonomy over the $30$ lowest-\iou{} test images.}
+\label{tab:fail}
+\begin{tabular}{lc}
+\toprule
+Category & Count \\
+\midrule
+Other (specular / heavy occlusion) & 24 \\
+Motion blur & 4 \\
+Thin elements & 2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig13_failure_cases.pdf}
+\caption{Representative failure cases. Specular/mirror-like surfaces and thin or
+heavily occluded glass dominate the error mass.}
+\label{fig:fail}
+\end{figure}
+
+%==============================================================================

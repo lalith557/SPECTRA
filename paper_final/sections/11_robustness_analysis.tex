@@ -1,0 +1,40 @@
+\section{Robustness Analysis}
+\label{sec:robust}
+%==============================================================================
+We corrupt a 100-image test subset (clean \iou{} $0.9691$) with eight families
+at five severities (protocol of \cite{hendrycks2019robustness}),
+Table~\ref{tab:robust} and Fig.~\ref{fig:radar}. Lighting, compression, fog, and
+colour jitter barely move the model; glare and motion-blur degrade gracefully
+and remain $\ge 0.81$ at severity~5; Gaussian noise is the genuine weak point
+($0.7561$).
+
+\begin{table}[t]
+\centering
+\caption{Robustness: \iou{} versus corruption severity (100-image subset).}
+\label{tab:robust}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrrr}
+\toprule
+Corruption & s1 & s2 & s3 & s4 & s5 \\
+\midrule
+low\_light     & 0.9693 & 0.9693 & 0.9692 & 0.9688 & 0.9663 \\
+fog            & 0.9692 & 0.9693 & 0.9694 & 0.9692 & 0.9685 \\
+colour\_jitter & 0.9690 & 0.9693 & 0.9693 & 0.9687 & 0.9686 \\
+jpeg\_compress & 0.9673 & 0.9679 & 0.9663 & 0.9655 & 0.9600 \\
+brightness     & 0.9672 & 0.9588 & 0.9363 & 0.9001 & 0.8719 \\
+glare          & 0.9670 & 0.9589 & 0.9485 & 0.9278 & 0.8593 \\
+motion\_blur   & 0.9501 & 0.9109 & 0.8862 & 0.8539 & 0.8147 \\
+gaussian\_noise& 0.9625 & 0.9376 & 0.8979 & 0.8291 & 0.7561 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.84\columnwidth]{fig14_corruption_radar.pdf}
+\caption{Severity-5 robustness over eight corruption families. The model is
+stable to photometric corruptions and degrades gracefully under blur and glare.}
+\label{fig:radar}
+\end{figure}
+
+%==============================================================================

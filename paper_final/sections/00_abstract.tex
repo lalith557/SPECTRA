@@ -1,0 +1,36 @@
+\begin{abstract}
+Transparent objects break the brightness-constancy assumption that underlies
+most segmentation pipelines: the appearance of glass is borrowed from the
+background seen through it. A widely held intuition holds that \emph{physics}---
+the refraction signature glass leaves between consecutive frames, and its
+characteristic double-edge boundary response---should provide a cue that opaque
+surfaces cannot. This paper is a controlled study of that intuition, not a
+method that advocates it. Within a single architecture, \spectra, we add two
+physics-motivated modules to a self-supervised \dinov{} ViT-S/14 backbone---an
+Optical-Flow Consistency Violation (\ofcv) gate from frozen RAFT flow and a
+non-trainable Boundary Resonance Field (\brf) Gabor prior---and isolate their
+effect under controlled conditions. Our central finding is negative and, we
+argue, useful: in a five-variant $\times$ 30-epoch $\times$ 3-seed ablation the
+physics modules add no \emph{practically meaningful} accuracy---a paired
+bootstrap bounds the largest physics effect at $+0.003$ \iou{} within a
+$\pm0.01$ equivalence margin (TOST), with the Gabor prior statistically
+indistinguishable from zero---and a real-video control shows the learned flow
+cue is \emph{inert} even under genuine inter-frame parallax (the
+\ofcv{} map moves by $<0.05\%$ and the prediction by $<0.001\%$ when the true
+next frame replaces a duplicated one). The accuracy that does materialise is a
+\emph{representation} effect: a \dinov{} backbone with a plain decoder---the
+30-epoch ``neither'' ablation variant---reaches $0.932$ \iou{} on Trans10K
+(versus our 10-epoch \spectra{} configuration at $0.9217$), and the proposed
+modules leave this unchanged. We are explicit that our matched-budget comparison to
+ImageNet-pretrained CNN baselines (\spectra{} $0.9217$ vs.\ DeepLabV3+ $0.8856$
+binary foreground \iou) conflates backbone and pretraining corpus with method,
+and we report it only as context for the operating point---never as a
+contribution; the ablation, not this comparison, is the evidence. We position
+\spectra{} as a refutation-style analysis: it quantifies, isolates, and explains
+a popular but unverified inductive bias, and cautions against crediting appealing
+physical priors when a strong self-supervised representation is the true cause.
+We additionally provide zero-shot cross-dataset transfer (ClearPose, VGSD),
+robustness over eight corruptions $\times$ five severities, an automated failure
+taxonomy over all $4{,}428$ test images, and an interpretability analysis that
+dissociates interpretable cues from accuracy.
+\end{abstract}

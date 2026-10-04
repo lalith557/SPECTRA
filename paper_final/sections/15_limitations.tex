@@ -1,0 +1,22 @@
+\section{Limitations}
+%==============================================================================
+(i) \textbf{Backbone comparison.} The matched-budget Table~\ref{tab:main} is
+confounded (SSL ViT vs.\ ImageNet CNN). We address the budget half directly with
+a converged-CNN control (Table~\ref{tab:converge}; the gap persists at $0.900$),
+and leave the fixed-decoder backbone-swap as the single remaining clean control.
+Our \emph{central} claim---that the physics modules are inert---rests on the
+backbone-controlled ablation and depends on neither.
+(ii) \textbf{Binary protocol.} We report binary foreground \iou; multi-class
+Trans10K mIoU would enable leaderboard comparison but measures a different
+quantity. (iii) \textbf{Three seeds.} Variance is estimated from three seeds;
+more would tighten the noise band, though the spread is already an order of
+magnitude below the effect that would be needed to claim a benefit.
+(iv) \textbf{Two cues, one backbone.} Our refutation covers two representative
+physics cues on one (strong) backbone; we do not claim \emph{all} physical
+priors are useless, only that these are inert here and that the burden of proof
+lies with controlled evidence. (v) \textbf{ClearPose domain gap.} Zero-shot
+ClearPose \iou{} ($0.5223$) indicates limited transfer to dense tabletop
+clutter (verified to be a domain gap, not an evaluation bug; Sec.~\ref{sec:cross}).
+(vi) \textbf{\brf{} is a near-static prior}, not a strongly per-image signal.
+
+%==============================================================================

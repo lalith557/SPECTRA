@@ -1,0 +1,25 @@
+\section{Interpretability}
+\label{sec:interp}
+%==============================================================================
+A common defence of physics modules is interpretability; we test it honestly.
+The \ofcv{} gate does not collapse: across training its per-image output
+variance grows from $0.154$ (epoch~1) to $0.216$ (epoch~4) and remains
+image-dependent, while the \brf{} mean stays near $0.51$ (i.e., \brf{} behaves
+as a near-static prior). Qualitatively (Fig.~\ref{fig:interp}), \ofcv{} maps
+localise to transparent regions and darken on opaque inclusions in the same
+scene. The honest conclusion is a \emph{dissociation}: \ofcv{} maps are
+interpretable and non-trivial, yet---per Secs.~\ref{sec:ablation}
+and~\ref{sec:cross}---this does not convert into higher \iou. Interpretability
+and accuracy are separate axes, and conflating them would overstate the
+contribution.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig12_ofcv_interpretability.pdf}
+\caption{\ofcv{} maps are image-dependent and localise to transparent regions,
+yet do not improve segmentation accuracy (Secs.~\ref{sec:ablation},
+\ref{sec:cross}). Panels illustrate the qualitative behaviour.}
+\label{fig:interp}
+\end{figure}
+
+%==============================================================================

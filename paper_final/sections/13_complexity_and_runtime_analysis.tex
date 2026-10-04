@@ -1,0 +1,28 @@
+\section{Complexity and Runtime Analysis}
+%==============================================================================
+\spectra{} has $26.6$M parameters ($22.1$M \dinov{} backbone, ${\approx}3.1$M
+\ofcv, remainder fusion/heads). Training the 10-epoch model takes $222$ minutes
+on the RTX~4070 Laptop GPU---${\approx}5\times$ the per-epoch cost of the CNN
+baselines (Table~\ref{tab:cost}), driven by backbone fine-tuning and the frozen
+RAFT pass. Inference is a single forward pass; the optional GNN, which does not
+help, is the only additional overhead. This cost asymmetry is itself an argument
+against the physics modules on static benchmarks: they add compute without
+accuracy.
+
+\begin{table}[t]
+\centering
+\caption{Compute cost (Trans10K, 10 epochs, RTX~4070 Laptop).}
+\label{tab:cost}
+\begin{tabular}{lrr}
+\toprule
+Model & Params (M) & Train (min) \\
+\midrule
+SegFormer-B0 & 3.8 & 43.7 \\
+U-Net (R34) & 24.4 & 43.7 \\
+DeepLabV3+ (R50) & 39.6 & 44.7 \\
+\spectra{} (ours) & 26.6 & 222 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%==============================================================================

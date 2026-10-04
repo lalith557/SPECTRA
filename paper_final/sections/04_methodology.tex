@@ -1,0 +1,100 @@
+\section{Methodology}
+\label{sec:method}
+%==============================================================================
+Figure~\ref{fig:arch} shows the architecture; hyperparameters are in
+Table~\ref{tab:hparams}.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig03_architecture.pdf}
+\caption{\spectra{} architecture. A fine-tuned \dinov{} ViT-S/14 produces patch
+tokens and FPN features. A frozen RAFT pass over $(I_t,I_{t+1})$ yields the
+photometric residual and forward--backward consistency consumed by the \ofcv{}
+detector to form a patch-resolution gate. A non-trainable Gabor bank produces
+the full-resolution \brf{} prior. The fusion head gates tokens by
+$\sigma(\ofcv)$, concatenates the projected \brf, and decodes the mask.}
+\label{fig:arch}
+\end{figure}
+
+\subsection{Backbone}
+We use \dinov{} ViT-S/14 (\texttt{facebook/dinov2-small}; $22.1$M parameters),
+fine-tuned at a low learning rate. It emits patch tokens
+$\mathbf{T}\in\mathbb{R}^{384\times h\times w}$ ($h=w=H/14$) and a four-scale
+FPN-style feature pyramid \cite{lin2017fpn}.
+
+\subsection{Optical-Flow Consistency Violation (OFCV)}
+A frozen RAFT-large network \cite{teed2020raft} produces forward flow
+$\mathbf{f}_{t\to t+1}$ and backward flow $\mathbf{f}_{t+1\to t}$. From these we
+derive two per-pixel signals: the photometric residual
+$r_t=\lVert I_t-\mathcal{W}(I_{t+1},\mathbf{f}_{t\to t+1})\rVert_1$, where
+$\mathcal{W}$ is backward warping, and the forward--backward consistency
+$c_t=\exp(-\lVert \mathbf{f}_{t\to t+1}+\mathcal{W}(\mathbf{f}_{t+1\to t},
+\mathbf{f}_{t\to t+1})\rVert)$. These are encoded and cross-attended
+\cite{vaswani2017transformer} against projected backbone tokens, followed by
+channel/spatial attention \cite{woo2018cbam,hu2018senet} and a small decoder,
+yielding a violation map $V\in[0,1]^{h\times w}$
+(Algorithm~\ref{alg:ofcv}, Fig.~\ref{fig:ofcv}).
+
+\begin{algorithm}[t]
+\caption{OFCV gate computation}
+\label{alg:ofcv}
+\begin{algorithmic}[1]
+\Require frames $I_t,I_{t+1}$; backbone tokens $\mathbf{T}$
+\State $\mathbf{f}_{t\to t+1},\mathbf{f}_{t+1\to t}\gets \mathrm{RAFT}(I_t,I_{t+1})$ \Comment{frozen}
+\State $r_t \gets |I_t-\mathcal{W}(I_{t+1},\mathbf{f}_{t\to t+1})|_1$
+\State $c_t \gets \exp(-|\mathbf{f}_{t\to t+1}+\mathcal{W}(\mathbf{f}_{t+1\to t},\mathbf{f}_{t\to t+1})|)$
+\State $P \gets \mathrm{ConvEnc}([\,r_t,c_t\,])$
+\State $A \gets \mathrm{CrossAttn}(\mathrm{query}{=}P,\ \mathrm{key,val}{=}\mathrm{Proj}(\mathbf{T}))$
+\State $V \gets \sigma(\mathrm{Dec}(\mathrm{CBAM}([A,\mathrm{Proj}(\mathbf{T})])))$
+\State \Return $V \in [0,1]^{h\times w}$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig04_ofcv_pipeline.pdf}
+\caption{The \ofcv{} pipeline: RAFT flow $\rightarrow$ photometric residual and
+forward--backward consistency $\rightarrow$ cross-attention with backbone tokens
+$\rightarrow$ violation gate. On static-frame data the residual collapses
+(Sec.~\ref{sec:theory}).}
+\label{fig:ofcv}
+\end{figure}
+
+\subsection{Boundary Resonance Field (BRF)}
+A fixed bank of $8$ orientations $\times\,3$ scales of Gabor filters is
+convolved with $I_t$. Locations with two parallel responses within a $15$-pixel
+window---the double-edge signature of an inner refractive and outer specular
+interface---are aggregated across orientations into a full-resolution prior
+$B\in\mathbb{R}^{H\times W}$. The bank is non-trainable; only a small refinement
+head is learned.
+
+\subsection{Fusion Head and Optional Graph Refinement}
+The fusion head gates tokens by $\sigma(V)$, concatenates the projected $B$ at
+full resolution, and decodes segmentation logits. An optional superpixel graph
+module (SLIC \cite{achanta2012slic} $+$ GCN \cite{kipf2017gcn}/GIN
+\cite{xu2019gin}) can refine the mask at inference; we include it only in the
+``full'' ablation variant and show it does not help.
+
+\subsection{Training Objective}
+\begin{equation}
+\mathcal{L}=\lambda_{\mathrm{seg}}\,\mathrm{BCE}
++\lambda_{\mathrm{bnd}}\,\mathcal{L}_{\mathrm{bnd}}
++\lambda_{\mathrm{dice}}\,\mathcal{L}_{\mathrm{dice}}
+-\lambda_{\mathrm{var}}\,\mathrm{Var}(V),
+\end{equation}
+where $\mathcal{L}_{\mathrm{dice}}$ \cite{milletari2016vnet} and the last term
+(which discourages \ofcv{} collapse to a constant) regularise training; weights
+are in Table~\ref{tab:hparams}. The boundary term
+$\mathcal{L}_{\mathrm{bnd}}$ is a boundary-weighted binary cross-entropy that
+emphasises pixels on the glass contour:
+\begin{equation}
+\mathcal{L}_{\mathrm{bnd}}=\frac{1}{|\Omega|}\sum_{p\in\Omega}
+\big(1+\theta\,b_p\big)\,
+\big[-m_p\log\hat{s}_p-(1-m_p)\log(1-\hat{s}_p)\big],
+\end{equation}
+where $\hat{s}_p=\sigma(\mathrm{seg}_p)$ is the predicted probability at pixel
+$p$, $m_p\in\{0,1\}$ the ground-truth label, and $b_p\in\{0,1\}$ flags a pixel
+inside the boundary band of $m$ obtained by a $3\times3$ erosion/dilation; the
+emphasis factor is $\theta=10$.
+
+%==============================================================================

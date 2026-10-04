@@ -1,0 +1,55 @@
+\section{Cross-Dataset Generalization and a Real-Video Control}
+\label{sec:cross}
+%==============================================================================
+A single-dataset study cannot establish whether a model learned transparency or
+Trans10K pixel statistics. We therefore evaluate the Trans10K-trained model
+\emph{zero-shot} (no fine-tuning) on ClearPose and VGSD
+(Table~\ref{tab:cross}).
+
+\begin{table}[t]
+\centering
+\caption{Zero-shot cross-dataset transfer of the Trans10K model
+($1{,}500$ image pairs per dataset). ``video'' uses genuine consecutive
+frames; ``static'' duplicates the frame ($I_{t+1}=I_t$). The video/static rows
+are identical to four decimals, isolating the contribution of real motion.}
+\label{tab:cross}
+\setlength{\tabcolsep}{4.5pt}
+\begin{tabular}{llrrrr}
+\toprule
+Dataset & Setting & \iou$\uparrow$ & F$\uparrow$ & MAE$\downarrow$ & BER$\downarrow$ \\
+\midrule
+Trans10K & in-domain         & 0.9237 & 0.959 & 0.029 & 0.026 \\
+VGSD     & zero-shot, video  & 0.9071 & 0.952 & 0.059 & 0.045 \\
+VGSD     & zero-shot, static & 0.9071 & 0.952 & 0.059 & 0.045 \\
+ClearPose& zero-shot         & 0.5223 & 0.630 & 0.122 & 0.141 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The model transfers substantially better to the VGSD video-glass domain
+($0.9071$ zero-shot) than to ClearPose ($0.5223$), whose dense tabletop clutter
+and small transparent instances differ markedly from Trans10K---an honest
+measure of the domain gap and evidence that the model has learned a
+transferable, if imperfect, notion of transparency rather than Trans10K pixel
+statistics. We verified that the low ClearPose score reflects domain shift, not
+an evaluation artefact: labels are binarised with the same rule used in training
+(any non-background instance is transparent), masks are resized to the network
+resolution with nearest-neighbour interpolation, and the in-domain Trans10K
+control evaluated through the \emph{identical} pipeline reproduces $0.9237$
+\iou{}.
+
+\textbf{Does a real second frame matter?} VGSD provides genuine inter-frame
+motion, letting us test the prediction of Sec.~\ref{sec:theory} directly. We run
+the model twice per pair: once with the true next frame and once with a
+duplicated frame. The two settings are \emph{identical} to four decimals across
+all metrics over $1{,}500$ pairs (Table~\ref{tab:cross}). Probing the internals over real pairs, the
+two input frames differ substantially (mean $|I_{t+1}-I_t|=0.258$), yet the
+\ofcv{} map changes by only $4.9\times10^{-4}$ and the predicted probability by
+$9.1\times10^{-6}$ on average (max $3.1\times10^{-5}$). In other words, the
+trained \ofcv{} detector is effectively \emph{blind to optical flow}: even given
+real parallax it behaves as an appearance function of the single frame
+$I_t$. This converts the theoretical degeneracy argument into a direct empirical
+result and is, to our knowledge, a stronger refutation of the
+``causal-physics-from-motion'' hypothesis than a static-frame ablation alone.
+
+%==============================================================================

@@ -1,0 +1,50 @@
+\section{Related Work}
+%==============================================================================
+We organise prior art into themes.
+
+\textbf{Transparent and glass-like segmentation.} Trans10K and TransLab
+\cite{xie2020translab} established the benchmark and a boundary-aware baseline;
+Trans2Seg \cite{xie2021trans2seg} introduced a transformer decoder. Glass and
+mirror detection has explored boundary and reflection priors: enhanced boundary
+learning \cite{he2021eblnet}, large-field glass detection \cite{mei2020gdnet},
+mirror-specific cues \cite{yang2019mirrornet}, reflection-prior context
+aggregation \cite{lin2021gsd}, polarization cues
+\cite{mei2022polarization}, and video glass surface detection from motion
+\cite{liu2024vgsd}. Our \brf{} module belongs to this boundary-prior
+family; our contribution is not a new prior but a controlled measurement of its
+(lack of) effect atop a strong backbone. Robotics-oriented transparent datasets
+such as ClearGrasp \cite{sajjan2020cleargrasp}, ClearPose
+\cite{chen2022clearpose}, and TransCG \cite{fang2022transcg} target depth/pose;
+we use ClearPose for cross-dataset segmentation transfer.
+
+\textbf{Segmentation architectures.} Encoder--decoder and dilated-convolution
+designs---U-Net \cite{ronneberger2015unet}, DeepLabV3+
+\cite{chen2018deeplabv3plus}, PSPNet \cite{zhao2017pspnet}, HRNet
+\cite{wang2020hrnet}---and multi-scale fusion \cite{lin2017fpn} form classical
+baselines. Vision transformers \cite{dosovitskiy2021vit} and hierarchical
+variants \cite{liu2021swin} underpin transformer segmenters: SETR
+\cite{zheng2021setr}, SegFormer \cite{xie2021segformer}, Mask2Former
+\cite{cheng2022mask2former}, and UPerNet \cite{xiao2018upernet}.
+
+\textbf{Self-supervised and foundation models.} DINO \cite{caron2021dino} and
+\dinov{} \cite{oquab2023dinov2} yield features sensitive to surface boundaries;
+masked \cite{he2022mae} and contrastive \cite{he2020moco} pretraining and
+language supervision \cite{radford2021clip} are complementary. Promptable
+foundation segmenters---SAM \cite{kirillov2023sam}, SAM~2
+\cite{ravi2024sam2}, and HQ-SAM \cite{ke2023hqsam}---perform poorly zero-shot on
+transparency, as we confirm.
+
+\textbf{Optical flow and physics-guided learning.} \ofcv{} builds on RAFT
+\cite{teed2020raft}; alternatives include PWC-Net \cite{sun2018pwcnet}, FlowNet
+2.0 \cite{ilg2017flownet2}, and GMFlow \cite{xu2022gmflow}. Our cross-attention
+follows the transformer formulation \cite{vaswani2017transformer} with
+channel/spatial attention \cite{woo2018cbam,hu2018senet}. Optional graph
+refinement uses SLIC superpixels \cite{achanta2012slic} and graph networks
+\cite{kipf2017gcn,xu2019gin}. Training uses Dice supervision
+\cite{milletari2016vnet}, AdamW \cite{loshchilov2019adamw}, and cosine schedules
+\cite{loshchilov2017sgdr}. We evaluate robustness with common corruptions
+\cite{hendrycks2019robustness}, interpretability with Grad-CAM
+\cite{selvaraju2017gradcam}, and frame our study against physics-informed
+learning \cite{karniadakis2021piml}, to which it is a cautionary data point.
+
+%==============================================================================

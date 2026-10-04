@@ -1,0 +1,85 @@
+\section{Results}
+\label{sec:results}
+%==============================================================================
+\textbf{Why no leaderboard comparison.} Published Trans10K methods report
+\emph{mean}-\iou{} over the official multi-class protocol (e.g., TransLab
+$0.726$, Trans2Seg $0.726$, EBLNet $0.734$, Mask2Former-Swin-B $0.762$). We
+report \emph{pooled binary foreground} \iou. These metrics are not comparable:
+under our protocol an identically trained SegFormer-B0 scores $0.868$, which
+would spuriously ``beat'' the much larger SegFormer-B5's reported $0.748$. We
+therefore restrict all comparisons to models trained and evaluated under one
+fixed pipeline.
+
+\begin{table}[t]
+\centering
+\caption{Matched-budget comparison on Trans10K val (binary foreground
+\iou). All trained models share the identical 10-epoch schedule and metric
+pipeline, but not the same backbone or pretraining: \spectra{} uses a
+\dinov{} ViT-S/14 (self-supervised on LVD-142M) while the baselines use
+ImageNet-1k--pretrained CNN encoders. The comparison therefore measures a
+backbone/pretraining difference, \emph{not} our modules (cf.\ Sec.~\ref{sec:ablation}).
+SAM is zero-shot with a centre-point prompt. Highest value in \textbf{bold}, not
+claimed as a method win.}
+\label{tab:main}
+\setlength{\tabcolsep}{4.5pt}
+\begin{tabular}{lrrrrr}
+\toprule
+Model & Par.(M) & \iou$\uparrow$ & F$\uparrow$ & MAE$\downarrow$ & BER$\downarrow$ \\
+\midrule
+SAM ViT-B (zero-shot) & 91.0 & 0.1341 & 0.315 & 0.292 & 0.459 \\
+SegFormer-B0 & 3.8 & 0.8680 & 0.926 & 0.057 & 0.047 \\
+U-Net (ResNet-34) & 24.4 & 0.8799 & 0.938 & 0.051 & 0.045 \\
+DeepLabV3+ (ResNet-50) & 39.6 & 0.8856 & 0.935 & 0.047 & 0.040 \\
+\spectra{} (ours) & 26.6 & \best{0.9217} & \best{0.956} & \best{0.029} & \best{0.027} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+At a matched 10-epoch budget (Table~\ref{tab:main}), \spectra{} records a higher
+binary foreground \iou{} than the CNN baselines (e.g.\ $+0.036$ over DeepLabV3+;
+test mean $0.9237$ over all $4{,}428$ images), and zero-shot SAM fails
+($0.1341$), confirming the task is not solved by generic promptable priors.
+
+\textbf{We read this table as context, not as a result, for two reasons.}
+First, it is a \emph{confounded} comparison. \spectra{}'s backbone is a \dinov{}
+ViT-S/14 pretrained self-supervised on the large LVD-142M corpus, whereas the
+baselines use ImageNet-1k--pretrained CNN encoders; the gap therefore reflects
+backbone capacity and pretraining corpus, not our contribution. The
+within-architecture ablation (Sec.~\ref{sec:ablation}) holds the backbone fixed
+and shows the physics modules contribute nothing---so whatever drives the
+$+0.036$, it is not \ofcv{} or \brf. Second, the 10-epoch budget need not be the
+convergence point for every backbone: our \dinov{} model itself improves from
+$0.9217$ (10\,ep) to $0.932$ (30\,ep), so the baselines may also be undertrained.
+
+\textbf{We resolve the budget concern directly (convergence control).} To rule
+out that the CNN baseline is merely undertrained, we trained DeepLabV3+ for $40$
+epochs under the identical pipeline (Table~\ref{tab:converge}). Its validation
+\iou{} plateaus at $0.900$ (best, epoch~35) and never approaches the \dinov{}
+backbone's $0.932$: the ${\approx}0.03$ \iou{} gap \emph{persists at
+convergence} and is therefore a genuine representation effect, not a
+training-budget artifact.\footnote{This run reproduces DeepLabV3+ at $0.863$
+\iou{} at epoch~10, within run-to-run variance of the $0.886$ in
+Table~\ref{tab:main}; we quote a single run's trajectory for internal
+consistency.} The one remaining clean control---holding the decoder fixed while
+swapping only the backbone (ImageNet-ViT vs.\ \dinov-ViT)---is future work; the
+``neither'' ablation variant (\dinov{}+decoder, no physics, $0.9322$;
+Sec.~\ref{sec:ablation}) already supplies the no-physics DINOv2 point.
+
+\begin{table}[t]
+\centering
+\caption{DeepLabV3+ trained to convergence on Trans10K val (same pipeline as
+Table~\ref{tab:main}). The ${\approx}0.03$ \iou{} gap to the \dinov{} backbone
+($0.932$, the ``neither'' ablation variant) persists; the baseline is not merely
+undertrained.}
+\label{tab:converge}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lrrrrrr}
+\toprule
+Epoch & 1 & 10 & 20 & 30 & 35 & 40 \\
+\midrule
+\iou{} & 0.779 & 0.863 & 0.888 & 0.895 & \best{0.900} & 0.900 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%==============================================================================

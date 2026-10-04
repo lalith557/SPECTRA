@@ -1,0 +1,28 @@
+\section{Datasets}
+%==============================================================================
+\textbf{Trans10K} \cite{xie2020translab} (Table~\ref{tab:data}) is our primary
+benchmark, used with binary transparent-vs-background masks (binarised at $>0$).
+\textbf{ClearPose} \cite{chen2022clearpose} provides cluttered tabletop
+transparent scenes (sets 8--9) for zero-shot transfer. \textbf{VGSD}~\cite{liu2024vgsd}
+(Video Glass Surface Detection) is a video glass benchmark with $105$ annotated
+clips, providing genuine consecutive frames---enabling the real-video control in
+Sec.~\ref{sec:cross}. Augmentation
+applies shared spatial transforms to both frames and the mask and aggressive
+independent photometric perturbations per frame to suppress texture shortcuts.
+
+\begin{table}[t]
+\centering
+\caption{Trans10K dataset statistics (binary protocol).}
+\label{tab:data}
+\begin{tabular}{lccc}
+\toprule
+Split & Train & Val & Test \\
+\midrule
+Images & 5{,}000 & 1{,}000 & 4{,}428 \\
+Resolution & \multicolumn{3}{c}{$448\times448$ (resized)} \\
+Classes & \multicolumn{3}{c}{2 (transparent / background)} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%==============================================================================

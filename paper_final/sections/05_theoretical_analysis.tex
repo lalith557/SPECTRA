@@ -1,0 +1,35 @@
+\section{Theoretical Analysis}
+\label{sec:theory}
+%==============================================================================
+We give a first-order account of the refraction cue and, crucially, of when it
+vanishes---which anticipates our ablation.
+
+\textbf{Refraction displacement.} For a thin transparent slab of thickness
+$\tau$ and refractive index $n$ over a background with depth gradient
+$\partial z/\partial x$, the small-angle approximation of Snell's law displaces a
+ray laterally by
+\begin{equation}
+\Delta x \approx \left(1-\tfrac{1}{n}\right)\frac{\partial z}{\partial x}\,\tau .
+\label{eq:snell}
+\end{equation}
+Since $\Delta x$ depends on $n>1$, the apparent motion of the background seen
+\emph{through} glass differs from the rigid-body camera motion. If
+$\mathbf{f}^{\mathrm{rigid}}$ is the egomotion-induced flow, the \emph{ideal}
+\ofcv{} signal is $V^\star\propto\lVert\mathbf{f}_{t\to t+1}-\mathbf{f}^{\mathrm{rigid}}\rVert$,
+non-zero precisely on refractive regions.
+
+\textbf{Degeneracy.} The signal in \eqref{eq:snell} is observable only under
+genuine parallax. On a static-image benchmark such as Trans10K there is no
+second frame; the standard practice (which we follow) sets $I_{t+1}=I_t$. Then
+$\mathbf{f}_{t\to t+1}\!\to\!0$, $\mathcal{W}(I_{t+1},\mathbf{f})\!\to\!I_t$, and
+\begin{equation}
+r_t\to 0,\qquad c_t\to 1,\qquad V^\star\to 0 .
+\end{equation}
+The physical signal \ofcv{} is designed to exploit is thus structurally absent
+on the very benchmark we train on. The network can still learn an
+appearance-correlated map from the residual encoder, but it carries no genuine
+refraction information. This predicts a null ablation \emph{and} that \ofcv{}
+should remain inert even on true video---a prediction we test empirically in
+Sec.~\ref{sec:cross}.
+
+%==============================================================================

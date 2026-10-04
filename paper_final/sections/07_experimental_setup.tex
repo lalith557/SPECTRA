@@ -1,0 +1,29 @@
+\section{Experimental Setup}
+%==============================================================================
+\textbf{Protocol.} All trained models use the \emph{identical} schedule: $10$
+epochs (comparison) or $30$ epochs (ablation), batch $4$, image $448^2$, AdamW
+\cite{loshchilov2019adamw} with head LR $10^{-4}$ / backbone LR $10^{-5}$, a
+1-epoch linear warm-up then cosine decay \cite{loshchilov2017sgdr} to $10^{-7}$,
+gradient clip $1.0$, and mixed precision. Hardware: a single NVIDIA RTX~4070
+Laptop GPU (8\,GB). Seeds $\{7,13,42\}$ with deterministic cuDNN.
+
+\begin{table}[t]
+\centering
+\caption{Key hyperparameters.}
+\label{tab:hparams}
+\begin{tabular}{lc@{\hskip 1.4em}lc}
+\toprule
+Parameter & Value & Parameter & Value \\
+\midrule
+Image size & $448^2$ & $\lambda_{\mathrm{seg}}$ & $1.0$ \\
+Batch size & $4$ & $\lambda_{\mathrm{bnd}}$ & $0.5$ \\
+Head LR & $10^{-4}$ & $\lambda_{\mathrm{dice}}$ & $0.1$ \\
+Backbone LR & $10^{-5}$ & $\lambda_{\mathrm{var}}$ & $0.1$ \\
+Weight decay & $10^{-4}$ & Threshold & $0.5$ \\
+Warm-up & $1$ epoch & $\beta^2$ (F) & $0.3$ \\
+Grad. clip & $1.0$ & Optimiser & AdamW \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%==============================================================================

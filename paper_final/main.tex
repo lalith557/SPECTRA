@@ -1,0 +1,75 @@
+%==============================================================================
+% SPECTRA -- modular Overleaf project (main.tex).
+% Compiles out-of-the-box in Overleaf: pdfLaTeX -> BibTeX -> pdfLaTeX x2.
+% IEEEtran + IEEEtran.bst are bundled with Overleaf; no external style needed.
+%==============================================================================
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{textcomp}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+
+\graphicspath{{figures/}}
+
+\newcommand{\spectra}{\textsc{Spectra}}
+\newcommand{\ofcv}{\textsc{ofcv}}
+\newcommand{\brf}{\textsc{brf}}
+\newcommand{\dinov}{DINOv2}
+\newcommand{\iou}{IoU}
+\newcommand{\best}[1]{\textbf{#1}}
+
+\begin{document}
+
+\title{SPECTRA: Representation over Refraction --- A Controlled Study of\\
+Physics-Motivated Cues for Transparent-Object Segmentation}
+
+\author{\IEEEauthorblockN{Lalith Gona}
+\IEEEauthorblockA{\textit{Department of Computer Science and Engineering}\\
+\textit{Lovely Professional University}\\
+Punjab, India\\
+gonalalith2005@gmail.com}}
+
+\maketitle
+
+\input{sections/00_abstract}
+
+\begin{IEEEkeywords}
+transparent-object segmentation, self-supervised learning, physics-guided
+learning, optical flow, controlled ablation, cross-dataset generalization,
+interpretability, negative results.
+\end{IEEEkeywords}
+
+\input{sections/01_introduction}
+\input{sections/02_related_work}
+\input{sections/03_problem_definition}
+\input{sections/04_methodology}
+\input{sections/05_theoretical_analysis}
+\input{sections/06_datasets}
+\input{sections/07_experimental_setup}
+\input{sections/08_results}
+\input{sections/09_ablation_studies}
+\input{sections/10_cross_dataset_generalization_and_a}
+\input{sections/11_robustness_analysis}
+\input{sections/12_error_analysis}
+\input{sections/13_complexity_and_runtime_analysis}
+\input{sections/14_interpretability}
+\input{sections/15_limitations}
+\input{sections/16_ethics}
+\input{sections/17_future_work}
+\input{sections/18_conclusion}
+\input{sections/19_reproducibility}
+\input{sections/20_code_availability}
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

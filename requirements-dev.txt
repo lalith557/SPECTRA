@@ -1,0 +1,33 @@
+# SPECTRA — full research / training / evaluation dependencies.
+# Reproduces every experiment in the paper. Install on top of the base set:
+#   pip install -r requirements.txt -r requirements-dev.txt
+#
+# NOTE: install torch + torchvision FIRST for your CUDA version, e.g.
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+
+-r requirements.txt
+
+# Training / augmentation
+albumentations>=1.3.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+wandb>=0.16.0
+
+# Metrics / stats
+scikit-learn>=1.3.0
+
+# MBP-GNN (graph/) — required only when use_gnn=True (the "full" ablation variant)
+torch-geometric>=2.4.0
+scikit-image>=0.21.0          # SLIC superpixels for the graph builder
+
+# Cross-dataset HF loaders (data/hf_datasets.py): GSD-S, RGBD-GSD, VGSD-D
+datasets>=2.14.0
+
+# Baselines (benchmarks/)
+segmentation-models-pytorch>=0.3.3   # U-Net / DeepLabV3+
+transformers>=4.35.0                 # SegFormer, Mask2Former
+
+# Demo / tooling
+gradio>=4.0.0
+pytest>=7.4.0
+pymupdf>=1.23.0               # figure text verification

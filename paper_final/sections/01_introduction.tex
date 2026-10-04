@@ -1,0 +1,92 @@
+\section{Introduction}
+%==============================================================================
+Glass bottles, windows, and clear plastics defeat conventional segmentation
+networks for a fundamental reason: a transparent surface has no stable
+appearance of its own. Its colour, texture, and edges are functions of
+\emph{what lies behind it}, not \emph{what it is} \cite{xie2020translab}. This
+breaks the brightness-constancy assumption on which appearance-driven segmenters
+implicitly rely, with tangible consequences: an autonomous agent cannot brake
+for a glass door it has segmented as the corridor behind it, and a manipulator
+cannot grasp a beaker it perceives as the wall.
+
+A recurring and intuitively appealing remedy is to inject \emph{physics}.
+Because refraction bends light according to Snell's law, the apparent motion of
+the background seen through glass should not match rigid camera motion,
+producing a measurable inter-frame inconsistency; and the two refractive
+interfaces of glass should produce a characteristic double-edge frequency
+response. If a network were handed these signals directly, the reasoning goes,
+it would localise transparency from \emph{causes} rather than borrowed
+appearance.
+
+\textbf{This is an analysis paper, not a method paper.} Rather than propose the
+physics cues as an advance, we treat them as a hypothesis to be tested and,
+ultimately, refuted. We implement both cues---an Optical-Flow Consistency
+Violation (\ofcv) gate and a Boundary Resonance Field (\brf) prior---inside a
+single architecture, \spectra, built on a self-supervised backbone, and ask one
+question under controlled conditions: \emph{do physics-motivated cues improve
+transparent-object segmentation once a strong representation is present?} Our
+answer is \emph{no, not measurably}, and we regard establishing this carefully
+as the contribution.
+
+\textbf{Headline finding.} In a five-variant $\times$ 30-epoch $\times$ 3-seed
+ablation, removing or adding the physics modules changes \iou{} by less than
+seed noise: all variants---including a no-physics backbone-plus-decoder---lie in
+$[0.9317,0.9350]$ ($\Delta=0.0033$), while the seed standard deviation is
+$0.0008$, and a paired bootstrap confirms the largest physics effect
+($+0.003$ \iou) is practically equivalent to zero within a $\pm0.01$ margin
+(Sec.~\ref{sec:ablation}). A real-video control (Sec.~\ref{sec:cross})
+shows the learned \ofcv{} gate is inert even given genuine parallax. The
+accuracy is a property of the representation: a \dinov{} backbone with a plain
+decoder (the 30-epoch ``neither'' variant) reaches $0.932$ \iou, against the
+10-epoch \spectra{} configuration at $0.9217$.
+
+\textbf{On the 0.92 number, stated plainly.} \spectra{} reaches a competitive
+binary foreground \iou{} of $0.9217$ (val) / $0.9237$ (test), above
+ImageNet-pretrained CNN baselines under a matched 10-epoch budget
+(DeepLabV3+ $0.8856$). We do \emph{not} claim this as a win for our method. The
+comparison contrasts a \dinov{} self-supervised ViT (pretrained on the large
+LVD-142M corpus) against ImageNet-1k--pretrained CNN encoders fine-tuned for the
+same number of epochs; it therefore conflates \emph{backbone and pretraining
+corpus} with anything we contribute, and the ablation shows the contribution is
+null. We present this number purely to establish that the operating point is
+reasonable (and that zero-shot SAM, at $0.1341$, is not), and we caveat it as
+such everywhere it appears (Sec.~\ref{sec:results}).
+
+\textbf{Contributions.}
+\begin{enumerate}
+\item \textbf{A controlled refutation.} We isolate two representative
+physics-motivated cues and show, across five variants, 30 epochs, and three
+seeds, that they add no accuracy beyond seed noise on Trans10K
+(Sec.~\ref{sec:ablation}).
+\item \textbf{A real-video falsification.} On the VGSD video benchmark, supplying
+genuine inter-frame parallax changes the \ofcv{} map by $<0.05\%$ and the
+prediction by $<0.001\%$ versus a duplicated frame---the flow cue is empirically
+blind to motion (Sec.~\ref{sec:cross}).
+\item \textbf{A representation finding.} The measured accuracy is attributable to
+the self-supervised backbone, not the cues or the architecture; we make the
+backbone/pretraining confound in the baseline comparison explicit rather than
+exploiting it (Secs.~\ref{sec:results},~\ref{sec:ablation}).
+\item \textbf{Supporting analyses.} Zero-shot cross-dataset transfer (ClearPose,
+VGSD), robustness over eight corruptions $\times$ five severities, an automated
+failure taxonomy over all $4{,}428$ test images, and an interpretability
+analysis dissociating interpretable cues from accuracy
+(Secs.~\ref{sec:cross}--\ref{sec:interp}).
+\end{enumerate}
+
+\textbf{Why this matters.} Physics-motivated and ``causal'' inductive biases are
+increasingly proposed for ill-posed perception tasks, often validated only by a
+headline metric on one dataset against weaker backbones. We show, on a task
+where such a prior is especially intuitive, that a popular cue can be
+\emph{interpretable, non-collapsing, and entirely inert}---and that an
+unexamined backbone advantage can masquerade as a method effect. Reporting this
+with full controls helps the community avoid a recurring attribution error and
+sets a reproducible template for testing, rather than assuming, that a physical
+prior contributes.
+
+We deliberately do \emph{not} compare against published Trans10K leaderboard
+numbers: they are reported under the multi-class mean-\iou{} protocol, whereas we
+report binary foreground \iou, so the two are not comparable
+(Sec.~\ref{sec:results}). All numbers herein are our own, measured under one
+fixed pipeline.
+
+%==============================================================================

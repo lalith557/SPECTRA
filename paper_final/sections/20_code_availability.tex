@@ -1,0 +1,20 @@
+\section*{Code Availability}
+The release implements every component described in this paper: the \dinov{}
+backbone, the \ofcv{} detector (RAFT flow $\rightarrow$ photometric residual and
+forward/backward consistency $\rightarrow$ cross-attention $\rightarrow$ CBAM
+gate), the non-trainable \brf{} Gabor module, the FPN fusion head, the complete
+multi-term objective, and all evaluation pipelines---matched comparison,
+converged-baseline control, the five-variant ablation, multi-seed training,
+paired-bootstrap equivalence tests, zero-shot cross-dataset transfer, the
+real-video control, eight-corruption robustness, and the automated failure
+taxonomy. The optional MBP-GNN refinement (the ``full'' variant's C3 stage)
+depends on \texttt{torch-geometric} and \texttt{scikit-image}; it is disabled by
+default and, per Table~\ref{tab:ablation}, does not improve accuracy. A
+\texttt{requirements-dev.txt} pins all training and evaluation dependencies, and
+all numbers in the paper are reproduced into a single \texttt{EXPERIMENTS/}
+directory.
+
+%==============================================================================
+% Embedded bibliography: 46 references, numbered in ascending order of first
+% appearance. Compiles with pdfLaTeX alone (no bibtex pass).
+%==============================================================================
